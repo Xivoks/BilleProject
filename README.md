@@ -18,7 +18,7 @@ użytkownikom przeglądanie, wyszukiwanie i zakup produktów online. Funkcjonaln
 Aby uruchomić sklep internetowy w Spring Boot, musisz mieć zainstalowane następujące narzędzia:
 
 - Java Development Kit (JDK) w wersji 11 lub nowszej
-- Maven - narzędzie do zarządzania zależnościami i budowy projektu
+- Gradle - narzędzie do zarządzania zależnościami i budowy projektu
 
 ## Uruchamianie projektu
 
