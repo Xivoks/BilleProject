@@ -13,7 +13,7 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public Product createProduct(Product product) {
-        return productRepository.save(product);
+        return productRepository.saveAndFlush(product);
     }
 
     public List<Product> getAllProducts() {
@@ -27,7 +27,7 @@ public class ProductService {
     public Product updateProduct(Long id, Product updatedProduct) {
         if (productRepository.existsById(id)) {
             updatedProduct.setId(id);
-            return productRepository.save(updatedProduct);
+            return productRepository.saveAndFlush(updatedProduct);
         }
         return null;
     }

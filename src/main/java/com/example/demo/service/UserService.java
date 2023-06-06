@@ -2,22 +2,18 @@ package com.example.demo.service;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     public User createUser(User user) {
-        return userRepository.save(user);
+        return userRepository.saveAndFlush(user);
     }
 
     public List<User> getAllUsers() {
@@ -31,7 +27,7 @@ public class UserService {
     public User updateUser(Long id, User updatedUser) {
         if (userRepository.existsById(id)) {
             updatedUser.setId(id);
-            return userRepository.save(updatedUser);
+            return userRepository.saveAndFlush(updatedUser);
         }
         return null;
     }
