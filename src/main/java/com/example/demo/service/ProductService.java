@@ -1,50 +1,41 @@
 package com.example.demo.service;
 
 import com.example.demo.model.Product;
+import com.example.demo.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
-    private static List<Product> productList = new ArrayList<>();
+    private final ProductRepository productRepository;
 
     public Product createProduct(Product product) {
-        productList.add(product);
-        return product;
+        return productRepository.save(product);
     }
 
     public List<Product> getAllProducts() {
-        return productList;
+        return productRepository.findAll();
     }
 
     public Product getProductById(Long id) {
-        for (Product product : productList) {
-            if (product.getId().equals(id)) {
-                return product;
-            }
-        }
-        return null;
+        return productRepository.findById(id).orElse(null);
     }
 
     public Product updateProduct(Long id, Product updatedProduct) {
-        for (Product product : productList) {
-            if (product.getId().equals(id)) {
-                product.setName(updatedProduct.getName());
-                product.setPrice(updatedProduct.getPrice());
-                return product;
-            }
+        if (productRepository.existsById(id)) {
+            updatedProduct.setId(id);
+            return productRepository.save(updatedProduct);
         }
         return null;
     }
 
     public boolean deleteProduct(Long id) {
-        for (Product product : productList) {
-            if (product.getId().equals(id)) {
-                productList.remove(product);
-                return true;
-            }
+        if (productRepository.existsById(id)) {
+            productRepository.deleteById(id);
+            return true;
         }
         return false;
     }
