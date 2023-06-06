@@ -1,51 +1,41 @@
 package com.example.demo.service;
 
 import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private static List<User> userList = new ArrayList<>();
+    private final UserRepository userRepository;
 
     public User createUser(User user) {
-        userList.add(user);
-        return user;
+        return userRepository.saveAndFlush(user);
     }
 
     public List<User> getAllUsers() {
-        return userList;
+        return userRepository.findAll();
     }
 
     public User getUserById(Long id) {
-        for (User user : userList) {
-            if (user.getId().equals(id)) {
-                return user;
-            }
-        }
-        return null;
+        return userRepository.findById(id).orElse(null);
     }
 
     public User updateUser(Long id, User updatedUser) {
-        for (User user : userList) {
-            if (user.getId().equals(id)) {
-                user.setUsername(updatedUser.getUsername());
-                user.setEmail(updatedUser.getEmail());
-                user.setPassword(updatedUser.getPassword());
-                return user;
-            }
+        if (userRepository.existsById(id)) {
+            updatedUser.setId(id);
+            return userRepository.saveAndFlush(updatedUser);
         }
         return null;
     }
 
     public boolean deleteUser(Long id) {
-        for (User user : userList) {
-            if (user.getId().equals(id)) {
-                userList.remove(user);
-                return true;
-            }
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return true;
         }
         return false;
     }
