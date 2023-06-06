@@ -8,7 +8,7 @@ import java.util.List;
 
 @Service
 public class UserService {
-    private static List<User> userList = new ArrayList<>();
+    private static final List<User> userList = new ArrayList<>();
 
     public User createUser(User user) {
         userList.add(user);
@@ -33,7 +33,6 @@ public class UserService {
             if (user.getId().equals(id)) {
                 user.setUsername(updatedUser.getUsername());
                 user.setEmail(updatedUser.getEmail());
-                user.setPassword(updatedUser.getPassword());
                 return user;
             }
         }
