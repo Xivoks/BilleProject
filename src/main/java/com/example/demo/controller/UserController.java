@@ -1,8 +1,9 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.UserDto;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,40 +16,53 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        User user = mapToUser(userDto);
         User createdUser = userService.createUser(user);
-        return ResponseEntity.ok(createdUser);
+        UserDto createdUserDto = mapToUserDto(createdUser);
+        return ResponseEntity.ok(createdUserDto);
     }
 
     @GetMapping
     public String getAllUsers(Model model) {
         List<User> userList = userService.getAllUsers();
-        model.addAttribute("users", userList);
+        List<UserDto> userDtoList = userList.stream()
+                .map(this::mapToUserDto)
+                .collect(Collectors.toList());
+        model.addAttribute("users", userDtoList);
         return "users";
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         if (user != null) {
-            return ResponseEntity.ok(user);
+            UserDto userDto = mapToUserDto(user);
+            return ResponseEntity.ok(userDto);
         }
         return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto updatedUserDto) {
+        User updatedUser = mapToUser(updatedUserDto);
         User user = userService.updateUser(id, updatedUser);
         if (user != null) {
-            return ResponseEntity.ok(user);
+            UserDto userDto = mapToUserDto(user);
+            return ResponseEntity.ok(userDto);
         }
         return ResponseEntity.notFound().build();
     }
@@ -60,5 +74,21 @@ public class UserController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private UserDto mapToUserDto(User user) {
+        UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        return userDto;
+    }
+
+    private User mapToUser(UserDto userDto) {
+        User user = new User();
+        user.setId(userDto.getId());
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        return user;
     }
 }
