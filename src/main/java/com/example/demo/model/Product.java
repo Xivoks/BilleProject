@@ -18,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Product {
     @Id
+    @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

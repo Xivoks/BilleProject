@@ -3,30 +3,34 @@ package com.example.demo.controller;
 import com.example.demo.dto.ProductDto;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/products")
+@RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-
-    @Autowired
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+    private final ModelMapper modelMapper;
 
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
-        Product product = mapToProduct(productDto);
+        Product product = modelMapper.map(productDto, Product.class);
         Product createdProduct = productService.createProduct(product);
-        ProductDto createdProductDto = mapToProductDto(createdProduct);
+        ProductDto createdProductDto = modelMapper.map(createdProduct, ProductDto.class);
         return ResponseEntity.ok(createdProductDto);
     }
 
@@ -34,7 +38,7 @@ public class ProductController {
     public String getAllProducts(Model model) {
         List<Product> productList = productService.getAllProducts();
         List<ProductDto> productDtoList = productList.stream()
-                .map(this::mapToProductDto)
+                .map(product -> modelMapper.map(product, ProductDto.class))
                 .collect(Collectors.toList());
         model.addAttribute("products", productDtoList);
         return "products";
@@ -44,7 +48,7 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         if (product != null) {
-            ProductDto productDto = mapToProductDto(product);
+            ProductDto productDto = modelMapper.map(product, ProductDto.class);
             return ResponseEntity.ok(productDto);
         }
         return ResponseEntity.notFound().build();
@@ -52,10 +56,10 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
-        Product updatedProduct = mapToProduct(updatedProductDto);
+        Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
         Product product = productService.updateProduct(id, updatedProduct);
         if (product != null) {
-            ProductDto productDto = mapToProductDto(product);
+            ProductDto productDto = modelMapper.map(product, ProductDto.class);
             return ResponseEntity.ok(productDto);
         }
         return ResponseEntity.notFound().build();
@@ -68,21 +72,5 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
-    }
-
-    private ProductDto mapToProductDto(Product product) {
-        ProductDto productDto = new ProductDto();
-        productDto.setId(product.getId());
-        productDto.setName(product.getName());
-        productDto.setPrice(product.getPrice());
-        return productDto;
-    }
-
-    private Product mapToProduct(ProductDto productDto) {
-        Product product = new Product();
-        product.setId(productDto.getId());
-        product.setName(productDto.getName());
-        product.setPrice(productDto.getPrice());
-        return product;
     }
 }
