@@ -3,8 +3,9 @@ package com.example.demo.service;
 import com.example.demo.model.Product;
 import com.example.demo.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -16,8 +17,13 @@ public class ProductService {
         return productRepository.saveAndFlush(product);
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<Product> createProducts(List<Product> productList) {
+        return productRepository.saveAll(productList);
+    }
+
+
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
     public Product getProductById(Long id) {

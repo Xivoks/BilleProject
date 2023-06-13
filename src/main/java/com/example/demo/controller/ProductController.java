@@ -5,6 +5,8 @@ import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,13 +36,30 @@ public class ProductController {
         return ResponseEntity.ok(createdProductDto);
     }
 
+    @PostMapping("/bulk")
+    public ResponseEntity<List<ProductDto>> createProducts(@RequestBody List<ProductDto> productDtoList) {
+        List<Product> productList = productDtoList.stream()
+                .map(productDto -> modelMapper.map(productDto, Product.class))
+                .collect(Collectors.toList());
+
+        List<Product> createdProducts = productService.createProducts(productList);
+
+        List<ProductDto> createdProductDtoList = createdProducts.stream()
+                .map(product -> modelMapper.map(product, ProductDto.class))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(createdProductDtoList);
+    }
+
+
     @GetMapping
-    public String getAllProducts(Model model) {
-        List<Product> productList = productService.getAllProducts();
-        List<ProductDto> productDtoList = productList.stream()
+    public String getAllProducts(Model model, Pageable pageable) {
+        Page<Product> productPage = productService.getAllProducts(pageable);
+        List<ProductDto> productDtoList = productPage.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductDto.class))
                 .collect(Collectors.toList());
         model.addAttribute("products", productDtoList);
+        model.addAttribute("page", productPage);
         return "products";
     }
 
