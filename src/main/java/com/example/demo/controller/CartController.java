@@ -76,4 +76,11 @@ public class CartController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/{cartId}/items/{productId}")
+    public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) throws NotFoundException {
+        Cart cart = cartService.addItemToCart(cartId, productId);
+        CartDto cartDto = modelMapper.map(cart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
+    }
 }

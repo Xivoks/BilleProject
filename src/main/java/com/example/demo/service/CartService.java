@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.model.Cart;
 import com.example.demo.model.Product;
 import com.example.demo.repository.CartRepository;
+import com.example.demo.repository.ProductRepository;
 import javassist.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CartService {
     private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
 
     public Cart createCart(Cart cart) {
         return cartRepository.save(cart);
@@ -70,6 +72,7 @@ public class CartService {
     }
 
     private Product getProductById(Long productId) {
-        return null;
+        return productRepository.findById(productId).orElse(null);
     }
+
 }
