@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ProductDto;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,40 +17,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final ModelMapper modelMapper;
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
+        Product product = modelMapper.map(productDto, Product.class);
         Product createdProduct = productService.createProduct(product);
-        return ResponseEntity.ok(createdProduct);
+        ProductDto createdProductDto = modelMapper.map(createdProduct, ProductDto.class);
+        return ResponseEntity.ok(createdProductDto);
     }
 
     @GetMapping
     public String getAllProducts(Model model) {
         List<Product> productList = productService.getAllProducts();
-        model.addAttribute("products", productList);
+        List<ProductDto> productDtoList = productList.stream()
+                .map(product -> modelMapper.map(product, ProductDto.class))
+                .collect(Collectors.toList());
+        model.addAttribute("products", productDtoList);
         return "products";
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         if (product != null) {
-            return ResponseEntity.ok(product);
+            ProductDto productDto = modelMapper.map(product, ProductDto.class);
+            return ResponseEntity.ok(productDto);
         }
         return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
+        Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
         Product product = productService.updateProduct(id, updatedProduct);
         if (product != null) {
-            return ResponseEntity.ok(product);
+            ProductDto productDto = modelMapper.map(product, ProductDto.class);
+            return ResponseEntity.ok(productDto);
         }
         return ResponseEntity.notFound().build();
     }

@@ -13,7 +13,7 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
   flyway:
     locations: classpath:db/migration
     enabled: true
