@@ -3,8 +3,11 @@ package com.example.demo.controller;
 import com.example.demo.dto.CartDto;
 import com.example.demo.model.Cart;
 import com.example.demo.service.CartService;
+import com.example.demo.exception.CustomException;
+import com.example.demo.dto.ErrorDto;
 import javassist.NotFoundException;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -78,9 +81,19 @@ public class CartController {
     }
 
     @PostMapping("/{cartId}/items/{productId}")
-    public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) throws NotFoundException {
-        Cart cart = cartService.addItemToCart(cartId, productId);
-        CartDto cartDto = modelMapper.map(cart, CartDto.class);
-        return ResponseEntity.ok(cartDto);
+    public ResponseEntity<?> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) {
+        try {
+            Cart cart = cartService.addItemToCart(cartId, productId);
+            CartDto cartDto = modelMapper.map(cart, CartDto.class);
+            return ResponseEntity.ok(cartDto);
+        } catch (CustomException e) {
+            ErrorDto errorDto = new ErrorDto(500, "Internal Server Error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
+        } catch (NotFoundException e) {
+            ErrorDto errorDto = new ErrorDto(404, "Not Found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDto);
+        }
     }
+
+
 }
