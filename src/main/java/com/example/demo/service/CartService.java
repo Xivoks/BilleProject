@@ -43,10 +43,15 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    public Cart addItemToCart(Long cartId, Product product) {
+    public Cart addItemToCart(Long cartId, Long productId) throws NotFoundException {
         Cart cart = cartRepository.findById(cartId).orElse(null);
         if (cart == null) {
-            return null;
+            throw new NotFoundException("Cart not found");
+        }
+
+        Product product = getProductById(productId);
+        if (product == null) {
+            throw new NotFoundException("Product not found");
         }
 
         cart.getProducts().add(product);
@@ -62,5 +67,9 @@ public class CartService {
         } else {
             throw new NotFoundException("Cart not found");
         }
+    }
+
+    private Product getProductById(Long productId) {
+        return null;
     }
 }

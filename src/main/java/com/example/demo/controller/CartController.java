@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Controller
 @RequestMapping("/carts")
 public class CartController {
@@ -27,27 +30,39 @@ public class CartController {
     }
 
     @PostMapping
-    public ResponseEntity<Cart> createCart(@RequestBody CartDto cartDto) {
+    public ResponseEntity<CartDto> createCart(@RequestBody CartDto cartDto) {
         Cart cart = modelMapper.map(cartDto, Cart.class);
         Cart createdCart = cartService.createCart(cart);
-        return ResponseEntity.ok(createdCart);
+        CartDto createdCartDto = modelMapper.map(createdCart, CartDto.class);
+        return ResponseEntity.ok(createdCartDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CartDto>> getAllCarts() {
+        List<Cart> cartList = cartService.getAllCarts();
+        List<CartDto> cartDtoList = cartList.stream()
+                .map(cart -> modelMapper.map(cart, CartDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(cartDtoList);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cart> getCartById(@PathVariable Long id) {
+    public ResponseEntity<CartDto> getCartById(@PathVariable Long id) {
         Cart cart = cartService.getCartById(id);
         if (cart != null) {
-            return ResponseEntity.ok(cart);
+            CartDto cartDto = modelMapper.map(cart, CartDto.class);
+            return ResponseEntity.ok(cartDto);
         }
         return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cart> updateCart(@PathVariable Long id, @RequestBody CartDto cartDto) {
-        Cart cart = modelMapper.map(cartDto, Cart.class);
+    public ResponseEntity<CartDto> updateCart(@PathVariable Long id, @RequestBody CartDto updateCartDto) {
+        Cart cart = modelMapper.map(updateCartDto, Cart.class);
         Cart updatedCart = cartService.updateCart(id, cart);
         if (updatedCart != null) {
-            return ResponseEntity.ok(updatedCart);
+            CartDto cartDto = modelMapper.map(cart, CartDto.class);
+            return ResponseEntity.ok(cartDto);
         }
         return ResponseEntity.notFound().build();
     }
