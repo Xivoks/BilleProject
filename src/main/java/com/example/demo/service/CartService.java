@@ -1,11 +1,11 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.Cart;
 import com.example.demo.model.Product;
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
-import javassist.NotFoundException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,17 +13,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+
+    public CartService(CartRepository cartRepository, ProductRepository productRepository) {
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
+    }
 
     public Cart createCart(Cart cart) {
         return cartRepository.save(cart);
     }
 
     public Cart getCartById(Long id) {
-        return cartRepository.findById(id).orElse(null);
+        return cartRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND));
     }
 
     public List<Cart> getAllCarts() {
@@ -31,10 +36,8 @@ public class CartService {
     }
 
     public Cart updateCart(Long id, Cart updatedCart) {
-        Cart cart = cartRepository.findById(id).orElse(null);
-        if (cart == null) {
-            return null;
-        }
+        Cart cart = cartRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND));
 
         cart.setUser(updatedCart.getUser());
         List<Product> products = new ArrayList<>(updatedCart.getProducts());
@@ -45,34 +48,25 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    public Cart addItemToCart(Long cartId, Long productId) throws NotFoundException {
-        Cart cart = cartRepository.findById(cartId).orElse(null);
-        if (cart == null) {
-            throw new NotFoundException("Cart not found");
-        }
+    public Cart addItemToCart(Long cartId, Long productId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND));
 
-        Product product = getProductById(productId);
-        if (product == null) {
-            throw new NotFoundException("Product not found");
-        }
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException("Product not found", 404, HttpStatus.NOT_FOUND));
 
         cart.getProducts().add(product);
 
         return cartRepository.save(cart);
     }
 
-    public boolean deleteCart(Long id) throws NotFoundException {
+    public boolean deleteCart(Long id) {
         Optional<Cart> cartOptional = cartRepository.findById(id);
         if (cartOptional.isPresent()) {
             cartRepository.deleteById(id);
             return true;
         } else {
-            throw new NotFoundException("Cart not found");
+            throw new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND);
         }
     }
-
-    private Product getProductById(Long productId) {
-        return productRepository.findById(productId).orElse(null);
-    }
-
 }
