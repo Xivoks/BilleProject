@@ -1,20 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.UserDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,7 +46,7 @@ public class UserController {
             UserDto userDto = modelMapper.map(user, UserDto.class);
             return ResponseEntity.ok(userDto);
         }
-        return ResponseEntity.notFound().build();
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("/{id}")
@@ -62,7 +57,7 @@ public class UserController {
             UserDto userDto = modelMapper.map(user, UserDto.class);
             return ResponseEntity.ok(userDto);
         }
-        return ResponseEntity.notFound().build();
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
@@ -71,6 +66,6 @@ public class UserController {
         if (deleted) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.notFound().build();
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 }
