@@ -1,20 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ProductDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,32 +40,39 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
-        if (product != null) {
+    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+        try {
+            Product product = productService.getProductById(id);
             ProductDto productDto = modelMapper.map(product, ProductDto.class);
             return ResponseEntity.ok(productDto);
+        } catch (CustomException e) {
+            throw e;
         }
-        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
-        Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
-        Product product = productService.updateProduct(id, updatedProduct);
-        if (product != null) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
+        try {
+            Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
+            Product product = productService.updateProduct(id, updatedProduct);
             ProductDto productDto = modelMapper.map(product, ProductDto.class);
             return ResponseEntity.ok(productDto);
+        } catch (CustomException e) {
+            throw e;
         }
-        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        boolean deleted = productService.deleteProduct(id);
-        if (deleted) {
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        try {
+            boolean deleted = productService.deleteProduct(id);
+            if (deleted) {
+                return ResponseEntity.noContent().build();
+            } else {
+                throw new CustomException("Product not found", 404, HttpStatus.NOT_FOUND);
+            }
+        } catch (CustomException e) {
+            throw e;
         }
-        return ResponseEntity.notFound().build();
     }
 }
