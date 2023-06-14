@@ -48,38 +48,26 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
-        try {
-            Product product = productService.getProductById(id);
-            ProductDto productDto = modelMapper.map(product, ProductDto.class);
-            return ResponseEntity.ok(productDto);
-        } catch (CustomException e) {
-            throw e;
-        }
+        Product product = productService.getProductById(id);
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        return ResponseEntity.ok(productDto);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
-        try {
-            Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
-            Product product = productService.updateProduct(id, updatedProduct);
-            ProductDto productDto = modelMapper.map(product, ProductDto.class);
-            return ResponseEntity.ok(productDto);
-        } catch (CustomException e) {
-            throw e;
-        }
+        Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
+        Product product = productService.updateProduct(id, updatedProduct);
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        return ResponseEntity.ok(productDto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        try {
-            boolean deleted = productService.deleteProduct(id);
-            if (deleted) {
-                return ResponseEntity.noContent().build();
-            } else {
-                throw new CustomException("Product not found", 404, HttpStatus.NOT_FOUND);
-            }
-        } catch (CustomException e) {
-            throw e;
+        boolean deleted = productService.deleteProduct(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            throw new CustomException("Product not found", 404, HttpStatus.NOT_FOUND);
         }
     }
 }

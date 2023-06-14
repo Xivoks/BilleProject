@@ -49,49 +49,33 @@ public class CartController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CartDto> getCartById(@PathVariable Long id) {
-        try {
-            Cart cart = cartService.getCartById(id);
-            CartDto cartDto = modelMapper.map(cart, CartDto.class);
-            return ResponseEntity.ok(cartDto);
-        } catch (CustomException e) {
-            throw e;
-        }
+        Cart cart = cartService.getCartById(id);
+        CartDto cartDto = modelMapper.map(cart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CartDto> updateCart(@PathVariable Long id, @RequestBody CartDto updateCartDto) {
-        try {
-            Cart cart = modelMapper.map(updateCartDto, Cart.class);
-            Cart updatedCart = cartService.updateCart(id, cart);
-            CartDto cartDto = modelMapper.map(updatedCart, CartDto.class);
-            return ResponseEntity.ok(cartDto);
-        } catch (CustomException e) {
-            throw e;
-        }
+        Cart cart = modelMapper.map(updateCartDto, Cart.class);
+        Cart updatedCart = cartService.updateCart(id, cart);
+        CartDto cartDto = modelMapper.map(updatedCart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCart(@PathVariable Long id) {
-        try {
-            boolean deleted = cartService.deleteCart(id);
-            if (deleted) {
-                return ResponseEntity.noContent().build();
-            } else {
-                throw new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND);
-            }
-        } catch (CustomException e) {
-            throw e;
+        boolean deleted = cartService.deleteCart(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            throw new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND);
         }
     }
 
     @PostMapping("/{cartId}/items/{productId}")
     public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) {
-        try {
-            Cart cart = cartService.addItemToCart(cartId, productId);
-            CartDto cartDto = modelMapper.map(cart, CartDto.class);
-            return ResponseEntity.ok(cartDto);
-        } catch (CustomException e) {
-            throw e;
-        }
+        Cart cart = cartService.addItemToCart(cartId, productId);
+        CartDto cartDto = modelMapper.map(cart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
     }
 }
