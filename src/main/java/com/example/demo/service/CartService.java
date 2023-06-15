@@ -6,6 +6,8 @@ import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
 import javassist.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CartService.class);
 
     public Cart createCart(Cart cart) {
         return cartRepository.save(cart);

@@ -5,6 +5,8 @@ import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +30,11 @@ import java.util.stream.Collectors;
 public class ProductController {
     private final ProductService productService;
     private final ModelMapper modelMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
+        logger.info("Creating a new product");
         Product product = modelMapper.map(productDto, Product.class);
         Product createdProduct = productService.createProduct(product);
         ProductDto createdProductDto = modelMapper.map(createdProduct, ProductDto.class);
@@ -39,6 +43,7 @@ public class ProductController {
 
     @PostMapping("/bulk")
     public ResponseEntity<List<ProductDto>> createProducts(@RequestBody List<ProductDto> productDtoList) {
+        logger.info("Creating multiple products");
         List<Product> productList = productDtoList.stream()
                 .map(productDto -> modelMapper.map(productDto, Product.class))
                 .collect(Collectors.toList());
@@ -58,6 +63,7 @@ public class ProductController {
                                  @RequestParam(required = false) String category,
                                  @RequestParam(required = false) Double minPrice,
                                  @RequestParam(required = false) Double maxPrice) {
+        logger.warn("Fetching all products");
 
         Page<Product> productPage = productService.getFilteredProducts(pageable, name, category, minPrice, maxPrice);
         List<ProductDto> productDtoList = productPage.getContent().stream()
@@ -78,6 +84,8 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
+        logger.info("Fetching product with ID: {}", id);
+
         Product product = productService.getProductById(id);
         if (product != null) {
             ProductDto productDto = modelMapper.map(product, ProductDto.class);
@@ -88,6 +96,8 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
+        logger.info("Updating product with ID: {}", id);
+
         Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
         Product product = productService.updateProduct(id, updatedProduct);
         if (product != null) {
@@ -99,6 +109,8 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        logger.info("Deleting product with ID: {}", id);
+
         boolean deleted = productService.deleteProduct(id);
         if (deleted) {
             return ResponseEntity.noContent().build();

@@ -26,6 +26,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.flywaydb:flyway-core:7.0.0'
     implementation 'org.modelmapper:modelmapper:2.4.4'
+    implementation 'org.slf4j:slf4j-api:1.7.32'
+    implementation 'ch.qos.logback:logback-classic:1.2.9'
 }
 
 test {
