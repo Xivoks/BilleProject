@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,15 +52,27 @@ public class ProductController {
         return ResponseEntity.ok(createdProductDtoList);
     }
 
-
     @GetMapping
-    public String getAllProducts(Model model, Pageable pageable) {
-        Page<Product> productPage = productService.getAllProducts(pageable);
+    public String getAllProducts(Model model, Pageable pageable,
+                                 @RequestParam(required = false) String name,
+                                 @RequestParam(required = false) String category,
+                                 @RequestParam(required = false) Double minPrice,
+                                 @RequestParam(required = false) Double maxPrice) {
+
+        Page<Product> productPage = productService.getFilteredProducts(pageable, name, category, minPrice, maxPrice);
         List<ProductDto> productDtoList = productPage.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductDto.class))
                 .collect(Collectors.toList());
+
         model.addAttribute("products", productDtoList);
         model.addAttribute("page", productPage);
+
+        boolean hasNextPage = productPage.hasNext();
+        model.addAttribute("hasNextPage", hasNextPage);
+
+        boolean exceededPageSizeLimit = productPage.getSize() > 50;
+        model.addAttribute("exceededPageSizeLimit", exceededPageSizeLimit);
+
         return "products";
     }
 
