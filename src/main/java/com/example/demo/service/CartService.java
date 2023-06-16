@@ -5,6 +5,10 @@ import com.example.demo.model.Cart;
 import com.example.demo.model.Product;
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
+import javassist.NotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +20,7 @@ import java.util.Optional;
 public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CartService.class);
 
     public CartService(CartRepository cartRepository, ProductRepository productRepository) {
         this.cartRepository = cartRepository;
