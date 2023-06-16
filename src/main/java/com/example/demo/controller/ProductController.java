@@ -1,11 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ProductDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.Product;
 import com.example.demo.model.ProductFilter;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -87,11 +89,8 @@ public class ProductController {
         logger.info("Fetching product with ID: {}", id);
 
         Product product = productService.getProductById(id);
-        if (product != null) {
-            ProductDto productDto = modelMapper.map(product, ProductDto.class);
-            return ResponseEntity.ok(productDto);
-        }
-        return ResponseEntity.notFound().build();
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        return ResponseEntity.ok(productDto);
     }
 
     @PutMapping("/{id}")
@@ -100,11 +99,8 @@ public class ProductController {
 
         Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
         Product product = productService.updateProduct(id, updatedProduct);
-        if (product != null) {
-            ProductDto productDto = modelMapper.map(product, ProductDto.class);
-            return ResponseEntity.ok(productDto);
-        }
-        return ResponseEntity.notFound().build();
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        return ResponseEntity.ok(productDto);
     }
 
     @DeleteMapping("/{id}")
@@ -114,7 +110,8 @@ public class ProductController {
         boolean deleted = productService.deleteProduct(id);
         if (deleted) {
             return ResponseEntity.noContent().build();
+        } else {
+            throw new CustomException("Product not found", 404, HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.notFound().build();
     }
 }

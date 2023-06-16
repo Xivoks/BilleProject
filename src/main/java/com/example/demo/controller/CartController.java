@@ -1,12 +1,14 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.CartDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.Cart;
 import com.example.demo.service.CartService;
 import javassist.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,6 +59,8 @@ public class CartController {
     public ResponseEntity<CartDto> getCartById(@PathVariable Long id) {
         logger.info("Getting cart with ID: {}", id);
         Cart cart = cartService.getCartById(id);
+        CartDto cartDto = modelMapper.map(cart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
         if (cart != null) {
             CartDto cartDto = modelMapper.map(cart, CartDto.class);
             logger.info("Cart found with ID: {}", id);
@@ -78,6 +82,8 @@ public class CartController {
         }
         logger.info("Cart not found with ID: {}", id);
         return ResponseEntity.notFound().build();
+        CartDto cartDto = modelMapper.map(updatedCart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
     }
 
     @DeleteMapping("/{id}")
@@ -88,13 +94,14 @@ public class CartController {
             logger.info("Cart deleted with ID: {}", id);
             return ResponseEntity.noContent().build();
         } else {
+            throw new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND);
             logger.info("Cart not found with ID: {}", id);
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping("/{cartId}/items/{productId}")
-    public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) throws NotFoundException {
+    public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) {
         logger.info("Adding item with ID: {} to cart with ID: {}", productId, cartId);
         Cart cart = cartService.addItemToCart(cartId, productId);
         CartDto cartDto = modelMapper.map(cart, CartDto.class);
