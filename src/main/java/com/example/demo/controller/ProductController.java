@@ -1,10 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ProductDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -45,32 +47,27 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
+    public ResponseEntity<?> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
-        if (product != null) {
-            ProductDto productDto = modelMapper.map(product, ProductDto.class);
-            return ResponseEntity.ok(productDto);
-        }
-        return ResponseEntity.notFound().build();
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        return ResponseEntity.ok(productDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto updatedProductDto) {
         Product updatedProduct = modelMapper.map(updatedProductDto, Product.class);
         Product product = productService.updateProduct(id, updatedProduct);
-        if (product != null) {
-            ProductDto productDto = modelMapper.map(product, ProductDto.class);
-            return ResponseEntity.ok(productDto);
-        }
-        return ResponseEntity.notFound().build();
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        return ResponseEntity.ok(productDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         boolean deleted = productService.deleteProduct(id);
         if (deleted) {
             return ResponseEntity.noContent().build();
+        } else {
+            throw new CustomException("Product not found", 404, HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.notFound().build();
     }
 }

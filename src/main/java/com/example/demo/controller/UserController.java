@@ -1,10 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.UserDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,7 +53,7 @@ public class UserController {
             UserDto userDto = modelMapper.map(user, UserDto.class);
             return ResponseEntity.ok(userDto);
         }
-        return ResponseEntity.notFound().build();
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("/{id}")
@@ -62,7 +64,7 @@ public class UserController {
             UserDto userDto = modelMapper.map(user, UserDto.class);
             return ResponseEntity.ok(userDto);
         }
-        return ResponseEntity.notFound().build();
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
@@ -71,6 +73,6 @@ public class UserController {
         if (deleted) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.notFound().build();
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 }

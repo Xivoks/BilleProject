@@ -1,10 +1,11 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.CartDto;
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.Cart;
 import com.example.demo.service.CartService;
-import javassist.NotFoundException;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,36 +50,30 @@ public class CartController {
     @GetMapping("/{id}")
     public ResponseEntity<CartDto> getCartById(@PathVariable Long id) {
         Cart cart = cartService.getCartById(id);
-        if (cart != null) {
-            CartDto cartDto = modelMapper.map(cart, CartDto.class);
-            return ResponseEntity.ok(cartDto);
-        }
-        return ResponseEntity.notFound().build();
+        CartDto cartDto = modelMapper.map(cart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CartDto> updateCart(@PathVariable Long id, @RequestBody CartDto updateCartDto) {
         Cart cart = modelMapper.map(updateCartDto, Cart.class);
         Cart updatedCart = cartService.updateCart(id, cart);
-        if (updatedCart != null) {
-            CartDto cartDto = modelMapper.map(cart, CartDto.class);
-            return ResponseEntity.ok(cartDto);
-        }
-        return ResponseEntity.notFound().build();
+        CartDto cartDto = modelMapper.map(updatedCart, CartDto.class);
+        return ResponseEntity.ok(cartDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCart(@PathVariable Long id) throws NotFoundException {
+    public ResponseEntity<Void> deleteCart(@PathVariable Long id) {
         boolean deleted = cartService.deleteCart(id);
         if (deleted) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.notFound().build();
+            throw new CustomException("Cart not found", 404, HttpStatus.NOT_FOUND);
         }
     }
 
     @PostMapping("/{cartId}/items/{productId}")
-    public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) throws NotFoundException {
+    public ResponseEntity<CartDto> addItemToCart(@PathVariable Long cartId, @PathVariable Long productId) {
         Cart cart = cartService.addItemToCart(cartId, productId);
         CartDto cartDto = modelMapper.map(cart, CartDto.class);
         return ResponseEntity.ok(cartDto);

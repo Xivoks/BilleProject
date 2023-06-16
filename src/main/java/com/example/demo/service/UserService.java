@@ -1,8 +1,10 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +23,8 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomException("User not found", 404, HttpStatus.NOT_FOUND));
     }
 
     public User updateUser(Long id, User updatedUser) {
@@ -29,7 +32,7 @@ public class UserService {
             updatedUser.setId(id);
             return userRepository.saveAndFlush(updatedUser);
         }
-        return null;
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 
     public boolean deleteUser(Long id) {
@@ -37,6 +40,6 @@ public class UserService {
             userRepository.deleteById(id);
             return true;
         }
-        return false;
+        throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
 }
