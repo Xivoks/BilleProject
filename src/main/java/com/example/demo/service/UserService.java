@@ -5,8 +5,7 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +14,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final PasswordEncoder passwordEncoder;
+
     public User createUser(User user) {
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
         return userRepository.saveAndFlush(user);
     }
 
@@ -44,4 +46,13 @@ public class UserService {
         }
         throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
+
+    public User loginUser(String username, String password) {
+        User user = userRepository.findByUsername(username);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
+    }
+
 }
