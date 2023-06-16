@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ProductDto;
 import com.example.demo.model.Product;
+import com.example.demo.model.ProductFilter;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -14,13 +15,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,14 +60,11 @@ public class ProductController {
     }
 
     @GetMapping
-    public String getAllProducts(Model model, Pageable pageable,
-                                 @RequestParam(required = false) String name,
-                                 @RequestParam(required = false) String category,
-                                 @RequestParam(required = false) Double minPrice,
-                                 @RequestParam(required = false) Double maxPrice) {
+    public String getAllProducts(Model model, Pageable pageable, @ModelAttribute @Valid ProductFilter filter) {
         logger.warn("Fetching all products");
 
-        Page<Product> productPage = productService.getFilteredProducts(pageable, name, category, minPrice, maxPrice);
+        Page<Product> productPage = productService.getFilteredProducts(pageable, filter.getName(), filter.getCategory(),
+                filter.getMinPrice(), filter.getMaxPrice());
         List<ProductDto> productDtoList = productPage.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductDto.class))
                 .collect(Collectors.toList());
@@ -81,6 +80,7 @@ public class ProductController {
 
         return "products";
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
