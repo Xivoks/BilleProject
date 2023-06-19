@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.example.demo.role.Role;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -28,4 +29,7 @@ public class User {
 
     @Column
     private String password;
+
+    @Column
+    private Role role;
 }
