@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-
 import com.example.demo.dto.UserDto;
 import com.example.demo.model.User;
 import com.example.demo.role.Role;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -36,7 +34,20 @@ public class AuthController {
         user.setRole(Role.USER);
         User createdUser = userService.createUser(user);
 
-        UserDto createdUserDto = modelMapper.map(createdUser, UserDto.class);
+        UserDto createdUserDto = new UserDto();
+        modelMapper.map(createdUser, createdUserDto);
+        return ResponseEntity.ok(createdUserDto);
+    }
+
+    @PostMapping("/super/register")
+    public ResponseEntity<UserDto> registerAdmin(@RequestBody UserDto userDto) {
+        User user = modelMapper.map(userDto, User.class);
+
+        user.setRole(Role.ADMIN);
+        User createdUser = userService.createUser(user);
+
+        UserDto createdUserDto = new UserDto();
+        modelMapper.map(createdUser, createdUserDto);
         return ResponseEntity.ok(createdUserDto);
     }
 
@@ -55,11 +66,11 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
             User loggedInUser = userService.loginUser(username, password);
-            UserDto loggedInUserDto = modelMapper.map(loggedInUser, UserDto.class);
+            UserDto loggedInUserDto = new UserDto();
+            modelMapper.map(loggedInUser, loggedInUserDto);
             return ResponseEntity.ok(loggedInUserDto);
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
-
 }
