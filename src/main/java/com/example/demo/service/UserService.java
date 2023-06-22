@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.security.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +25,7 @@ public class UserService implements UserDetailsService {
     public User createUser(User user) {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+        user.setToken(TokenGenerator.generateToken());
         return userRepository.saveAndFlush(user);
     }
 
@@ -59,7 +61,6 @@ public class UserService implements UserDetailsService {
         }
         throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
     }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);

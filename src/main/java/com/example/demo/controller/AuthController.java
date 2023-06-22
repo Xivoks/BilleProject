@@ -1,11 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.UserDto;
-import com.example.demo.model.User;
-import com.example.demo.role.Role;
-import com.example.demo.service.UserService;
+import com.example.demo.exception.CustomException;
+import com.example.demo.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,7 +11,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,32 +20,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
-    private final ModelMapper modelMapper;
+    private final AuthService authService;
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto) {
-        User user = modelMapper.map(userDto, User.class);
-
-        user.setRole(Role.USER);
-        User createdUser = userService.createUser(user);
-
-        UserDto createdUserDto = new UserDto();
-        modelMapper.map(createdUser, createdUserDto);
-        return ResponseEntity.ok(createdUserDto);
+    public ResponseEntity<String> registerUser(@RequestBody UserDto userDto) {
+        String token = authService.registerUser(userDto);
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/super/register")
-    public ResponseEntity<UserDto> registerAdmin(@RequestBody UserDto userDto) {
-        User user = modelMapper.map(userDto, User.class);
-
-        user.setRole(Role.ADMIN);
-        User createdUser = userService.createUser(user);
-
-        UserDto createdUserDto = new UserDto();
-        modelMapper.map(createdUser, createdUserDto);
-        return ResponseEntity.ok(createdUserDto);
+    public ResponseEntity<String> registerAdmin(@RequestBody UserDto userDto) {
+        String token = authService.registerAdmin(userDto);
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
@@ -63,14 +47,13 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-            User loggedInUser = userService.loginUser(username, password);
-            UserDto loggedInUserDto = new UserDto();
-            modelMapper.map(loggedInUser, loggedInUserDto);
-            return ResponseEntity.ok(loggedInUserDto);
-        } catch (AuthenticationException e) {
+            UserDto loggedInUserDto = authService.loginUser(username, password);
+            if (loggedInUserDto != null) {
+                return ResponseEntity.ok(loggedInUserDto);
+            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (AuthenticationException e) {
+            throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
         }
     }
 }

@@ -32,4 +32,8 @@ public class User {
 
     @Column
     private Role role;
+
+    @Column
+    private String token;
+
 }
