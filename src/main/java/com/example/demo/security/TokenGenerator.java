@@ -10,4 +10,8 @@ public class TokenGenerator {
     public static String generateToken() {
         return UUID.randomUUID().toString();
     }
+
+    public static boolean verifyToken(String token) {
+        return token != null && token.length() > 0;
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,21 +56,22 @@ public class UserService implements UserDetailsService {
     }
 
     public User loginUser(String username, String password) {
-        User user = userRepository.findByUsername(username);
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-            return user;
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
+            return user.get();
         }
         throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
     }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
+                user.get().getUsername(),
+                user.get().getPassword(),
                 Collections.emptyList()
         );
     }

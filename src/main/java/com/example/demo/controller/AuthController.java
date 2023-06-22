@@ -4,24 +4,20 @@ import com.example.demo.dto.UserDto;
 import com.example.demo.exception.CustomException;
 import com.example.demo.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody UserDto userDto) {
@@ -36,24 +32,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> loginUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> loginUser(@RequestBody UserDto userDto, HttpServletResponse response) {
         String username = userDto.getUsername();
         String password = userDto.getPassword();
 
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
             UserDto loggedInUserDto = authService.loginUser(username, password);
-            if (loggedInUserDto != null) {
-                return ResponseEntity.ok(loggedInUserDto);
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (AuthenticationException e) {
-            throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
+            String token = loggedInUserDto.getToken();
+            String cookieValue = "Bearer " + token;
+            cookieValue = cookieValue.replaceAll(" ", "");
+            Cookie cookie = new Cookie("Auth", cookieValue);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+            return ResponseEntity.ok(loggedInUserDto);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getHttpStatus()).build();
         }
     }
 }
