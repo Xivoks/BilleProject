@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +26,7 @@ public class UserService implements UserDetailsService {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         user.setToken(TokenGenerator.generateToken());
-        return userRepository.saveAndFlush(user);
+        return userRepository.save(user);
     }
 
     public List<User> getAllUsers() {
@@ -42,7 +41,7 @@ public class UserService implements UserDetailsService {
     public User updateUser(Long id, User updatedUser) {
         if (userRepository.existsById(id)) {
             updatedUser.setId(id);
-            return userRepository.saveAndFlush(updatedUser);
+            return userRepository.save(updatedUser);
         }
         throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
@@ -69,10 +68,15 @@ public class UserService implements UserDetailsService {
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
-        return new org.springframework.security.core.userdetails.User(
-                user.get().getUsername(),
-                user.get().getPassword(),
-                Collections.emptyList()
-        );
+        return user.get();
+    }
+
+
+    public UserDetails loadUserByToken(String token) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByToken(token);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return user.get();
     }
 }
