@@ -39,10 +39,8 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
                 if (user != null) {
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     if (user.getRole() == Role.ADMIN) {
-                        System.out.println(user.getRole());
                         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                     } else if (user.getRole() == Role.USER) {
-                        System.out.println(user.getRole());
                         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
                     }
 
