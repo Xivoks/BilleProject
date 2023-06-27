@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,11 +35,12 @@ public class User implements UserDetails {
     @Column
     private String email;
 
-    @Column
-    private String password;
-
+    @Enumerated(EnumType.STRING)
     @Column
     private Role role;
+
+    @Column
+    private String password;
 
     @Column
     private String token;

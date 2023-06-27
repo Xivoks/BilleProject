@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.UserDto;
-import com.example.demo.exception.CustomException;
 import com.example.demo.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,17 +35,13 @@ public class AuthController {
         String username = userDto.getUsername();
         String password = userDto.getPassword();
 
-        try {
-            UserDto loggedInUserDto = authService.loginUser(username, password);
-            String token = loggedInUserDto.getToken();
-            String cookieValue = "Bearer " + token;
-            cookieValue = cookieValue.replaceAll(" ", "");
-            Cookie cookie = new Cookie("Auth", cookieValue);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-            return ResponseEntity.ok(loggedInUserDto);
-        } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).build();
-        }
+        UserDto loggedInUserDto = authService.loginUser(username, password);
+        String token = loggedInUserDto.getToken();
+        String cookieValue = "Bearer " + token;
+        cookieValue = cookieValue.replaceAll(" ", "");
+        Cookie cookie = new Cookie("Auth", cookieValue);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return ResponseEntity.ok(loggedInUserDto);
     }
 }

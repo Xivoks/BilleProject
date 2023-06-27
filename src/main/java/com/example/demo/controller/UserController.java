@@ -1,13 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.UserDto;
-import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
-import com.example.demo.security.TokenGenerator;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,20 +35,14 @@ public class UserController {
     }
 
     @GetMapping
-    public String getAllUsers(Model model, HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && verifyToken(token)) {
-            List<User> userList = userService.getAllUsers();
-            List<UserDto> userDtoList = userList.stream()
-                    .map(user -> modelMapper.map(user, UserDto.class))
-                    .collect(Collectors.toList());
-            model.addAttribute("users", userDtoList);
-            return "users";
-        } else {
-            throw new CustomException("Invalid or missing token", 401, HttpStatus.UNAUTHORIZED);
-        }
+    public String getAllUsers(Model model) {
+        List<User> userList = userService.getAllUsers();
+        List<UserDto> userDtoList = userList.stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .collect(Collectors.toList());
+        model.addAttribute("users", userDtoList);
+        return "users";
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
@@ -79,13 +69,5 @@ public class UserController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
-    }
-
-    private boolean verifyToken(String token) {
-        if (token.startsWith("Bearer ")) {
-            String tokenValue = token.substring(7);
-            return TokenGenerator.verifyToken(tokenValue);
-        }
-        return false;
     }
 }

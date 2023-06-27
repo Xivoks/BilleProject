@@ -28,31 +28,37 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = getTokenFromHeader(request);
+        Authentication authentication = getAuthentication(request);
 
-        if (token != null) {
-            if (TokenGenerator.verifyToken(token)) {
-                String clearToken = token.replace("Bearer ", "");
-                String username = userService.loadUserByToken(clearToken).getUsername();
-                User user = (User) userService.loadUserByUsername(username);
-
-                if (user != null) {
-                    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                    if (user.getRole() == Role.ADMIN) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    } else if (user.getRole() == Role.USER) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                    }
-
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
-            }
+        if (authentication != null) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         chain.doFilter(request, response);
     }
 
+    private Authentication getAuthentication(HttpServletRequest request) {
+        String token = getTokenFromHeader(request);
+
+        if (token != null) {
+            String clearToken = token.replace("Bearer ", "");
+            String username = userService.loadUserByToken(clearToken).getUsername();
+            User user = (User) userService.loadUserByUsername(username);
+
+            if (user != null) {
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                if (user.getRole() == Role.ADMIN) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                } else if (user.getRole() == Role.USER) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                }
+
+                return new UsernamePasswordAuthenticationToken(user, null, authorities);
+            }
+        }
+
+        return null;
+    }
 
     private String getTokenFromHeader(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
