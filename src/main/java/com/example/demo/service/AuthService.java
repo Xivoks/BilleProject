@@ -1,12 +1,10 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.UserDto;
-import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
 import com.example.demo.role.Role;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 
@@ -36,11 +34,7 @@ public class AuthService {
 
     public UserDto loginUser(String username, String password) {
         User user = userService.loginUser(username, password);
-        if (user != null) {
-            return modelMapper.map(user, UserDto.class);
-        } else {
-            throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
-        }
+        return modelMapper.map(user, UserDto.class);
     }
 
 }
