@@ -1,8 +1,7 @@
 package com.example.demo.security;
 
-import com.example.demo.role.Role;
-import com.example.demo.service.UserService;
 import com.example.demo.model.User;
+import com.example.demo.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,25 +39,24 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
     private Authentication getAuthentication(HttpServletRequest request) {
         String token = getTokenFromHeader(request);
 
-        if (token != null) {
-            String clearToken = token.replace("Bearer ", "");
-            String username = userService.loadUserByToken(clearToken).getUsername();
-            User user = (User) userService.loadUserByUsername(username);
-
-            if (user != null) {
-                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                if (user.getRole() == Role.ADMIN) {
-                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                } else if (user.getRole() == Role.USER) {
-                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                }
-
-                return new UsernamePasswordAuthenticationToken(user, null, authorities);
-            }
+        if (token == null) {
+            return null;
         }
 
-        return null;
+        String clearToken = token.replace("Bearer ", "");
+        User user = (User) userService.loadUserByToken(clearToken);
+
+        if (user == null) {
+            return null;
+        }
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+
+        return new UsernamePasswordAuthenticationToken(user, null, authorities);
     }
+
 
     private String getTokenFromHeader(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
