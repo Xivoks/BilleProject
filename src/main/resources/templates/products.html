@@ -20,7 +20,7 @@
     </tr>
 </table>
 
-<a th:if="${hasNextPage}" th:href="@{/products(page=${page.nextPageable.pageNumber}, size=${page.size})}">Następna
+<a th:if="${hasNextPage}" th:href="@{/api/products(page=${page.nextPageable.pageNumber}, size=${page.size})}">Następna
     strona</a>
 
 </body>

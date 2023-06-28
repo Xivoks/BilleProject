@@ -3,21 +3,30 @@ package com.example.demo.service;
 import com.example.demo.exception.CustomException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.security.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
+
     private final UserRepository userRepository;
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final PasswordEncoder passwordEncoder;
+
     public User createUser(User user) {
-        return userRepository.saveAndFlush(user);
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+        user.setToken(TokenGenerator.generateToken());
+        return userRepository.save(user);
     }
 
     public List<User> getAllUsers() {
@@ -32,7 +41,7 @@ public class UserService {
     public User updateUser(Long id, User updatedUser) {
         if (userRepository.existsById(id)) {
             updatedUser.setId(id);
-            return userRepository.saveAndFlush(updatedUser);
+            return userRepository.save(updatedUser);
         }
         throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
     }
@@ -43,5 +52,31 @@ public class UserService {
             return true;
         }
         throw new CustomException("User not found", 404, HttpStatus.NOT_FOUND);
+    }
+
+    public User loginUser(String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
+            return user.get();
+        }
+        throw new CustomException("Invalid username or password", 401, HttpStatus.UNAUTHORIZED);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return user.get();
+    }
+
+
+    public UserDetails loadUserByToken(String token) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findByToken(token);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return user.get();
     }
 }
