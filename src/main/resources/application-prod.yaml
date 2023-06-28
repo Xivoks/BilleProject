@@ -1,23 +1,6 @@
-server:
-  port: 8081
 spring:
-  main:
-    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:mysql://localhost:3306/sklep_bille
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: zaq1@WSX
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL5Dialect
-        naming:
-          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-        temp:
-          use_jdbc_metadata_defaults: false
-    hibernate:
-      ddl-auto: none
-  flyway:
-    locations: classpath:db/migration
-    enabled: true
